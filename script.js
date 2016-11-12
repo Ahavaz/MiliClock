@@ -1,4 +1,4 @@
-/* Canvas elements' colors */
+/* Canvas elements' colors and fonts*/
 var face = '#272B2A';
 var border = '#569E92';
 var hand = '#526A5D';
