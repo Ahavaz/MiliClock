@@ -4,6 +4,9 @@ var border = '#569E92';
 var hand = '#526A5D';
 var numbers = '#FFFDB6';
 var markers = '#9FFE00';
+var numbersFont = 'px Cinzel';
+var titleFont = 'px Tangerine';
+var periodFont = 'px "Expletus Sans"';
 
 var resizeTimeout, x, y;
 var canvas = document.getElementById('canvas');
@@ -90,7 +93,7 @@ function drawMarkers(ctx, radius) {
 function drawNumbers(ctx, radius) {
   var ang;
   var num = 1;
-  ctx.font = radius * 0.10 + 'px Cinzel';
+  ctx.font = radius * 0.10 + numbersFont;
   ctx.fillStyle = numbers;
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
@@ -132,9 +135,9 @@ function drawText(ctx, radius) {
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
   ctx.fillStyle = numbers;
-  ctx.font = radius * 0.12 + 'px Tangerine';
+  ctx.font = radius * 0.12 + titleFont;
   ctx.fillText('MilliClock', 0, -radius / 2.4);
-  ctx.font = radius * 0.10 + 'px "Expletus Sans"';
+  ctx.font = radius * 0.10 + periodFont;
   // ctx.fillText('©2016', 0, radius / 2.6);
   // ctx.fillText('by Lucas César', 0, radius / 2.2);
   var text = hour < 12 ? 'AM' : 'PM';
