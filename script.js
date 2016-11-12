@@ -1,47 +1,52 @@
 /* Canvas elements' colors and fonts*/
-var face = '#272B2A';
-var border = '#569E92';
-var hand = '#526A5D';
-var numbers = '#FFFDB6';
-var markers = '#9FFE00';
-var numbersFont = 'px Cinzel';
-var titleFont = 'px Tangerine';
-var periodFont = 'px "Expletus Sans"';
+const face = '#272B2A',
+      border = '#569E92',
+      hand = '#526A5D',
+      numbers = '#FFFDB6',
+      markers = '#9FFE00',
+      numbersFont = 'px Cinzel',
+      titleFont = 'px Tangerine',
+      periodFont = 'px "Expletus Sans"',
+      canvas = document.getElementById('canvas'),
+      ctx = canvas.getContext('2d');
 
-var resizeTimeout, x, y;
-var canvas = document.getElementById('canvas');
-var ctx = canvas.getContext('2d');
+let resizeTimeout,
+    radius,
+    grad,
+    x,
+    y;
 
 (function() {
-
   resizeAndDraw();
-
   window.addEventListener('resize', resizeThrottler, false);
-
-  function resizeThrottler() {
-    // ignore resize events as long as an actualResizeHandler execution is in the queue
-    if (!resizeTimeout) {
-      resizeTimeout = setTimeout(function() {
-        resizeTimeout = null;
-        resizeAndDraw();
-
-       // The actualResizeHandler will execute at a rate of 15fps
-       }, 66);
-    }
-  }
-
-  function resizeAndDraw() {
-    // handle the resize event
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    x = canvas.width / 2;
-    y = canvas.height / 2;
-    ctx.translate(x, y);
-    radius = 0.90 * Math.min(canvas.width, canvas.height) / 2;
-    setInterval(drawClock, 1);
-  }
-
 }());
+
+function resizeThrottler() {
+  // ignore resize events as long as an actualResizeHandler execution is in the queue
+  if (!resizeTimeout) {
+    resizeTimeout = setTimeout(function() {
+      resizeTimeout = null;
+      resizeAndDraw();
+
+      //  The actualResizeHandler will execute at a rate of 15fps (1f/0.066ms = 15fps)
+    }, 1000);
+  }
+}
+
+function resizeAndDraw() {
+  // handle the resize event
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  x = canvas.width / 2;
+  y = canvas.height / 2;
+  ctx.translate(x, y);
+  radius = 0.90 * Math.min(canvas.width, canvas.height) / 2;
+  grad = ctx.createRadialGradient(0, 0, radius * 0.97, 0, 0, radius * 1.03);
+  grad.addColorStop(0, face);
+  grad.addColorStop(0.5, border);
+  grad.addColorStop(1, hand);
+  setInterval(drawClock, 1);
+}
 
 function drawClock() {
   drawFace(ctx, radius);
@@ -52,15 +57,10 @@ function drawClock() {
 }
 
 function drawFace(ctx, radius) {
-  var grad;
   ctx.beginPath();
   ctx.arc(0, 0, radius, 0, 2 * Math.PI);
   ctx.fillStyle = face;
   ctx.fill();
-  grad = ctx.createRadialGradient(0, 0, radius * 0.97, 0, 0, radius * 1.03);
-  grad.addColorStop(0, face);
-  grad.addColorStop(0.5, border);
-  grad.addColorStop(1, hand);
   ctx.strokeStyle = grad;
   ctx.lineWidth = radius * 0.1;
   ctx.stroke();
@@ -71,8 +71,8 @@ function drawFace(ctx, radius) {
 }
 
 function drawMarkers(ctx, radius) {
-  var ang;
-  var num = 0;
+  let ang;
+  let num = 0;
   while (num++ < 60) {
     ang = num * Math.PI / 30;
     ctx.rotate(ang);
