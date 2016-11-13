@@ -22,8 +22,7 @@ const faceColor = '#272B2A',
       piPer21600 = Math.PI / 21600,
       piPer30000 = Math.PI / 30000,
       piPer1800000 = Math.PI / 1800000,
-      piPer21600000 = Math.PI / 21600000
-      ;
+      piPer21600000 = Math.PI / 21600000;
 
 let resizeTimeout = null,
     radius = 0,
@@ -57,8 +56,7 @@ let resizeTimeout = null,
     hourWidth = 0,
     minuteWidth = 0,
     secondWidth = 0,
-    millisecondWidth = 0
-    ;
+    millisecondWidth = 0;
 
 (function() {
   resizeAndDraw();
