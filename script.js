@@ -1,20 +1,64 @@
-/* Canvas elements' colors and fonts*/
-const face = '#272B2A',
-      border = '#569E92',
-      hand = '#526A5D',
-      numbers = '#FFFDB6',
-      markers = '#9FFE00',
+const faceColor = '#272B2A',
+      borderColor = '#569E92',
+      handColor = '#526A5D',
+      numbersColor = '#FFFDB6',
+      markersColor = '#9FFE00',
       numbersFont = 'px Cinzel',
+      titleText = 'MilliClock',
       titleFont = 'px Tangerine',
+      textAM = 'AM',
+      textPM = 'PM',
       periodFont = 'px "Expletus Sans"',
       canvas = document.getElementById('canvas'),
-      ctx = canvas.getContext('2d');
+      ctx = canvas.getContext('2d'),
+      fps = 60;
+      ms = 1000 / fps;
+      circle = 2 * Math.PI,
+      piPer6 = Math.PI / 6,
+      piPer30 = Math.PI / 30,
+      piPer360 = Math.PI / 360,
+      piPer500 = Math.PI / 500,
+      piPer1800 = Math.PI / 1800,
+      piPer21600 = Math.PI / 21600,
+      piPer30000 = Math.PI / 30000,
+      piPer1800000 = Math.PI / 1800000,
+      piPer21600000 = Math.PI / 21600000
+      ;
 
-let resizeTimeout,
-    radius,
-    grad,
-    x,
-    y;
+let resizeTimeout = null,
+    radius = 0,
+    grad = {},
+    x = 0,
+    y = 0,
+    now = {},
+    hour = 0,
+    minute = 0,
+    second = 0,
+    millisecond = 0,
+    ang = 0;
+    text = '',
+    gradRadius0 = 0,
+    gradRadius1 = 0,
+    size01 = 0,
+    numTranslate = 0,
+    titleSize = 0,
+    textTranslate = 0,
+    markersTranslate = 0,
+    markersSmall = 0,
+    markersBig = 0,
+    hourSize = 0,
+    minuteSize = 0,
+    secondSize = 0,
+    millisecondSize = 0,
+    hourSize2 = 0,
+    minuteSize2 = 0,
+    secondSize2 = 0,
+    millisecondSize2 = 0,
+    hourWidth = 0,
+    minuteWidth = 0,
+    secondWidth = 0,
+    millisecondWidth = 0
+    ;
 
 (function() {
   resizeAndDraw();
@@ -22,14 +66,11 @@ let resizeTimeout,
 }());
 
 function resizeThrottler() {
-  // ignore resize events as long as an actualResizeHandler execution is in the queue
   if (!resizeTimeout) {
     resizeTimeout = setTimeout(function() {
       resizeTimeout = null;
       resizeAndDraw();
-
-      //  The actualResizeHandler will execute at a rate of 15fps (1f/0.066ms = 15fps)
-    }, 1000);
+    }, ms);
   }
 }
 
@@ -37,78 +78,100 @@ function resizeAndDraw() {
   // handle the resize event
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  radius = 0.9 * Math.min(canvas.width, canvas.height) / 2;
+  setSizes(radius);
   x = canvas.width / 2;
   y = canvas.height / 2;
   ctx.translate(x, y);
-  radius = 0.90 * Math.min(canvas.width, canvas.height) / 2;
-  grad = ctx.createRadialGradient(0, 0, radius * 0.97, 0, 0, radius * 1.03);
-  grad.addColorStop(0, face);
-  grad.addColorStop(0.5, border);
-  grad.addColorStop(1, hand);
+  grad = ctx.createRadialGradient(0, 0, gradRadius0, 0, 0, gradRadius1);
+  grad.addColorStop(0, faceColor);
+  grad.addColorStop(0.5, borderColor);
+  grad.addColorStop(1, handColor);
   setInterval(drawClock, 1);
 }
 
-function drawClock() {
-  drawFace(ctx, radius);
-  drawMarkers(ctx, radius);
-  drawNumbers(ctx, radius);
-  drawText(ctx, radius);
-  drawTime(ctx, radius);
+function setSizes(radius) {
+  gradRadius0 = radius * 0.97;
+  gradRadius1 = radius * 1.03;
+  size01 = radius * 0.1;
+  numTranslate = radius * 0.85;
+  titleSize = radius * 0.12;
+  textTranslate = radius / 2.4;
+  markersTranslate = radius * 0.94;
+  markersSmall = radius * 0.005;
+  markersBig = radius * 0.008;
+  hourSize = radius * 0.5;
+  minuteSize = radius * 0.7;
+  secondSize = radius * 0.9;
+  millisecondSize = radius * 0.06;
+  hourSize2 = hourSize * 0.1;
+  minuteSize2 = minuteSize * 0.1;
+  secondSize2 = secondSize * 0.1;
+  millisecondSize2 = millisecondSize * 0.1;
+  hourWidth = radius * 0.03;
+  minuteWidth = radius * 0.02;
+  secondWidth = radius * 0.01;
+  millisecondWidth = radius * 0.007;
 }
 
-function drawFace(ctx, radius) {
+function drawClock() {
+  now = new Date();
+  hour = now.getHours();
+  minute = now.getMinutes();
+  second = now.getSeconds();
+  millisecond = now.getMilliseconds();
+  text = hour < 12 ? textAM : textPM;
+  drawFace();
+  drawMarkers();
+  drawNumbers();
+  drawText();
+  drawTime();
+}
+
+function drawFace() {
   ctx.beginPath();
-  ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-  ctx.fillStyle = face;
+  ctx.arc(0, 0, radius, 0, circle);
+  ctx.fillStyle = faceColor;
   ctx.fill();
   ctx.strokeStyle = grad;
-  ctx.lineWidth = radius * 0.1;
+  ctx.lineWidth = size01;
   ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(0, 0, radius * 0.05, 0, 2 * Math.PI);
-  ctx.fillStyle = hand;
-  ctx.fill();
 }
 
-function drawMarkers(ctx, radius) {
-  let ang;
-  let num = 0;
-  while (num++ < 60) {
-    ang = num * Math.PI / 30;
+function drawMarkers() {
+  for (let n = 1; n < 61; n++) {
+    ang = n * piPer30;
     ctx.rotate(ang);
-    ctx.translate(0, -radius * 0.94);
+    ctx.translate(0, -markersTranslate);
     ctx.beginPath();
-    if(num % 5) {
-      ctx.arc(0, 0, radius * 0.005, 0, 2 * Math.PI);
+    if(n % 5) {
+      ctx.arc(0, 0, markersSmall, 0, circle);
     } else {
-      ctx.arc(0, 0, radius * 0.008, 0, 2 * Math.PI);
+      ctx.arc(0, 0, markersBig, 0, circle);
     }
-    ctx.fillStyle = markers;
+    ctx.fillStyle = markersColor;
     ctx.fill();
-    ctx.translate(0, radius * 0.94);
+    ctx.translate(0, markersTranslate);
     ctx.rotate(-ang);
   }
 }
 
-function drawNumbers(ctx, radius) {
-  var ang;
-  var num = 1;
-  ctx.font = radius * 0.10 + numbersFont;
-  ctx.fillStyle = numbers;
+function drawNumbers() {
+  ctx.font = size01 + numbersFont;
+  ctx.fillStyle = numbersColor;
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
-  while (num < 13) {
-    if(!(num % 3)) {
-      ang = num * Math.PI / 6;
+  for (let n = 1; n < 13; n++) {
+    if(!(n % 3)) {
+      ang = n * piPer6;
       ctx.rotate(ang);
-      ctx.translate(0, -radius * 0.85);
+      ctx.translate(0, -numTranslate);
       ctx.rotate(-ang);
-      ctx.fillText(romanize(num), 0, 0);
+      ctx.fillText(romanize(n), 0, 0);
       ctx.rotate(ang);
-      ctx.translate(0, radius * 0.85);
+      ctx.translate(0, numTranslate);
       ctx.rotate(-ang);
     }
-    num++;
   }
 }
 
@@ -129,61 +192,48 @@ function romanize(num) {
   }
 }
 
-function drawText(ctx, radius) {
-  var now = new Date();
-  var hour = now.getHours();
+function drawText() {
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
-  ctx.fillStyle = numbers;
-  ctx.font = radius * 0.12 + titleFont;
-  ctx.fillText('MilliClock', 0, -radius / 2.4);
-  ctx.font = radius * 0.10 + periodFont;
+  ctx.fillStyle = numbersColor;
+  ctx.font = titleSize + titleFont;
+  ctx.fillText(titleText, 0, -textTranslate);
+  ctx.font = size01 + periodFont;
   // ctx.fillText('©2016', 0, radius / 2.6);
   // ctx.fillText('by Lucas César', 0, radius / 2.2);
-  var text = hour < 12 ? 'AM' : 'PM';
-  ctx.fillText(text, 0, radius / 2.4);
+  ctx.fillText(text, 0, textTranslate);
 }
 
-function drawTime(ctx, radius) {
-  var now = new Date();
-  var hour = now.getHours();
-  var minute = now.getMinutes();
-  var second = now.getSeconds();
-  var millisecond = now.getMilliseconds();
-
+function drawTime() {
   // Hour
   hour = hour % 12;
-  hour = (hour * Math.PI / 6) +
-    (minute * Math.PI / (6 * 60)) +
-    (second * Math.PI / (6 * 3600)) +
-    (millisecond * Math.PI / (6 * 3600000));
+  hour = hour * piPer6 + minute * piPer360 + second * piPer21600 + millisecond * piPer21600000;
 
   // Minute
-  minute = (minute * Math.PI / 30) +
-    (second * Math.PI / (30 * 60)) +
-    (millisecond * Math.PI / (30 * 60000));
+  minute = minute * piPer30 + second * piPer1800 + millisecond * piPer1800000;
 
   // Second
-  second = (second * Math.PI / 30) +
-    (millisecond * Math.PI / (30 * 1000));
+  second = second * piPer30 + millisecond * piPer30000;
 
   // Millisecond
-  millisecond = (millisecond * Math.PI / 500);
+  millisecond = millisecond * piPer500;
 
-  drawHand(ctx, millisecond, radius * 0.06, radius * 0.02);
-  drawHand(ctx, hour, radius * 0.5, radius * 0.03);
-  drawHand(ctx, minute, radius * 0.7, radius * 0.02);
-  drawHand(ctx, second, radius * 0.9, radius * 0.01, markers);
+  drawHand(ctx, hour, hourSize, hourSize2, hourWidth);
+  drawHand(ctx, minute, minuteSize, minuteSize2, minuteWidth);
+  drawHand(ctx, second, secondSize, secondSize2, secondWidth, markersColor);
+  drawHand(ctx, millisecond, millisecondSize, millisecondSize2, millisecondWidth, markersColor);
 }
 
-function drawHand(ctx, pos, length, width, color) {
+function drawHand(ctx, ang, length, length2, width, color) {
   ctx.beginPath();
-  ctx.strokeStyle = typeof color !== 'undefined' ? color : hand;
+  ctx.strokeStyle = typeof color !== 'undefined' ? color : handColor;
   ctx.lineWidth = width;
   ctx.lineCap = 'round';
   ctx.moveTo(0, 0);
-  ctx.rotate(pos);
+  ctx.rotate(ang);
   ctx.lineTo(0, -length);
   ctx.stroke();
-  ctx.rotate(-pos);
+  ctx.lineTo(0, length2);
+  ctx.stroke();
+  ctx.rotate(-ang);
 }
